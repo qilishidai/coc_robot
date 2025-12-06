@@ -18,7 +18,7 @@ class 机器人监控中心:
         self.日志队列 = 日志队列#UI从这个队列获取日志
         self.全局消息队列 = queue.Queue()#所有在线用户共用一个消息队列和数据库
         self.数据库 = 任务数据库()
-        self.运行标志 = True
+        self.运行标志 = True#用于控制监控线程退出的标志
 
         # 启动监控线程,监控每一个机器人的行为
         self.监控线程 = threading.Thread(
