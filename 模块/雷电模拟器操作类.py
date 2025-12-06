@@ -42,7 +42,62 @@ class 雷电模拟器操作类:
         # 获取注册表值得到雷电模拟器安装目录
         self.雷电模拟器安装目录 = self.get_registry_value(key, sub_key, value_name)
         self.雷电模拟器索引 = 模拟器索引
+
+        self.模拟器exe路径 = self.雷电模拟器安装目录 + "dnplayer.exe"
+
         self.已初始化=True
+
+
+    def 设置模拟器DPI兼容性(self, 模式="DPIUNAWARE"):
+        """
+            设置模拟器为 DPI_UNAWARE 模式后：
+            1. 模拟器内部仍按 100% DPI 渲染，解决非100%系统缩放导致的截图偏差。
+            2. 系统只是放大显示窗口，视觉上像是100%缩放。
+            3. OpenGL 获取到的仍是模拟器内部的原始未缩放图像，因此截图准确。
+        模式:
+            "DPIUNAWARE"               → 系统放大（变大但模糊）
+            "HIGHDPIAWARE"             → 高 DPI 自适应（清晰）
+            "DPIUNAWARE GDISCALED"     → GDI 强制放大（更大）
+        """
+        键值 = "~ " + 模式
+
+        try:
+            key = winreg.OpenKey(
+                winreg.HKEY_CURRENT_USER,
+                r"Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers",
+                0,
+                winreg.KEY_SET_VALUE
+            )
+
+            winreg.SetValueEx(key, self.模拟器exe路径, 0, winreg.REG_SZ, 键值)
+            winreg.CloseKey(key)
+
+            print(f"✔ DPI 设置成功：{模式}")
+        except Exception as e:
+            print("❌ DPI 设置失败：", e)
+
+    # -----------------------
+    # 新增：取消 DPI 兼容性
+    # -----------------------
+    def 取消模拟器DPI兼容性(self):
+        """删除注册表对应项，使模拟器恢复默认 DPI 行为"""
+        try:
+            key = winreg.OpenKey(
+                winreg.HKEY_CURRENT_USER,
+                r"Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers",
+                0,
+                winreg.KEY_SET_VALUE
+            )
+
+            winreg.DeleteValue(key, self.模拟器exe路径)
+            winreg.CloseKey(key)
+            print("✔ 已取消 DPI 兼容性设置（恢复默认）")
+
+        except FileNotFoundError:
+            print("（提示）当前无 DPI 设置，无需取消")
+        except Exception as e:
+            print("❌ 取消 DPI 设置失败：", e)
+
 
     @staticmethod
     def get_registry_value(key, sub_key, value_name):

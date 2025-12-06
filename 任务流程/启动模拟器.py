@@ -54,8 +54,13 @@ class 启动模拟器任务(基础任务):
             if 当前DPI != 96:
                 缩放百分比 = round(当前DPI / 96 * 100)
                 上下文.置脚本状态(f"模拟器窗口缩放约为 {缩放百分比}%，不是100%")
-                raise RuntimeError(f"模拟器窗口缩放不是100%，当前缩放约为 {缩放百分比}%（DPI={当前DPI}）")
 
+                # 自动设置 DPI_UNAWARE
+                上下文.置脚本状态("正在设置模拟器 DPI_UNAWARE 模式…")
+                模拟器.设置模拟器DPI兼容性()  # <- 调用类方法
+
+                # 提示重启或直接抛异常让外层处理
+                raise RuntimeError(f"模拟器窗口缩放不是100%，已设置 DPI_UNAWARE，模拟器将自动重启生效")
             return True
 
         except Exception as e:
