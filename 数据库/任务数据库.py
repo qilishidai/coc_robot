@@ -3,7 +3,7 @@ import json
 import os
 import sqlite3
 import time
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import List, Dict, Any, Optional
 
 @dataclass
@@ -25,6 +25,7 @@ class 机器人设置:
     刷墙起始圣水: int = 100000
     是否刷主世界:bool=True
     是否刷夜世界:bool=False
+    欲升级的英雄: List[str]=field(default_factory=lambda: ["野蛮人之王", "弓箭女皇", "亡灵王子", "飞盾战神", "大守护者"])
 
     def __post_init__(self):
         self.部落冲突包名 = ("com.supercell.clashofclans"
