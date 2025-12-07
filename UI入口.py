@@ -286,10 +286,19 @@ class 增强型机器人控制界面:
             except Exception as e:
                 messagebox.showerror("停止失败", str(e))
 
+    def 选项卡切换回调(self, event):
+        notebook = event.widget  # 当前Notebook控件
+        当前索引 = notebook.index(notebook.select())  # 获取当前选中索引
+        当前标签 = notebook.tab(当前索引, "text")  # 获取当前选项卡标签
+
+        if 当前标签 == "配置管理":
+            self.载入选中配置()
+
+
     def _创建右侧配置面板(self):
         右侧容器 = ttk.Notebook(self.主框架)
         右侧容器.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True, padx=5)
-
+        右侧容器.bind("<<NotebookTabChanged>>", self.选项卡切换回调)
         # 日志选项卡
         日志框架 = ttk.Frame(右侧容器)
         self.日志文本框 = scrolledtext.ScrolledText(日志框架, wrap=tk.WORD, font=('Consolas', 11))
@@ -301,6 +310,7 @@ class 增强型机器人控制界面:
         配置表单 = ttk.Frame(配置框架)
         配置表单.pack(pady=10, padx=10, fill=tk.X)
 
+        英雄列表 = ["野蛮人之王", "弓箭女皇", "亡灵王子", "飞盾战神", "大守护者"]
         配置项定义 = [
             ('机器人标识', 'entry', 'robot_', '用于区分不同机器人的唯一名称'),
             ('模拟器索引', 'spinbox', (0, 99, 1), '对应雷电多开器中的模拟器ID，0表示第一个模拟器,如果不明白请设置为0'),
@@ -311,6 +321,8 @@ class 增强型机器人控制界面:
             ('刷墙起始金币', 'entry', '200000', '金币高于此数值触发刷墙任务'),
             ('刷墙起始圣水', 'entry', '200000', '圣水高于此数值触发刷墙任务,但是请注意,如果是低本,请将此值设置得足够大,以免触发圣水刷墙,但是目前还不能够圣水刷墙造成错误'),
             ('辅助运行模式', 'combo', ['只打主世界', '只打夜世界','先打满主世界再打夜世界'], '打鱼模式,字面意思,打满后辅助会停止运行.'),
+            # 新增：欲升级的英雄
+            ('欲升级的英雄', 'listbox', 英雄列表, '选择想要升级的英雄，可多选或选择默认')
         ]
 
         self.配置输入项 = {}
@@ -325,6 +337,10 @@ class 增强型机器人控制界面:
                 控件.current(0)
             elif 类型 == 'spinbox':
                 控件 = ttk.Spinbox(配置表单, from_=默认值[0], to=默认值[1], increment=默认值[2])
+            elif 类型 == 'listbox':
+                控件 = tk.Listbox(配置表单, selectmode=tk.MULTIPLE, height=min(5, len(默认值)))
+                for 英雄 in 默认值:
+                    控件.insert(tk.END, 英雄)
 
             控件.grid(row=行, column=1, padx=5, pady=5, sticky=tk.EW)
             # 添加工具提示
@@ -428,11 +444,20 @@ class 增强型机器人控制界面:
                 控件.insert(0, "200000")
 
     def 应用更改(self):
-        配置数据 = {k: v.get() for k, v in self.配置输入项.items()}
+        配置数据 = {}
+        for k, v in self.配置输入项.items():
+            if isinstance(v, tk.Listbox):
+                # 获取所有选中项的值
+                选中索引 = v.curselection()
+                选中值 = [v.get(i) for i in 选中索引]
+                配置数据[k] = 选中值
+            else:
+                配置数据[k] = v.get()
+
         if not 配置数据["机器人标识"].strip():
             messagebox.showerror("错误", "机器人标识不能为空！")
             return
-        # print(配置数据)
+
 
         try:
             新配置 = 机器人设置(
@@ -446,6 +471,7 @@ class 增强型机器人控制界面:
                 是否刷夜世界=True if 配置数据["辅助运行模式"] == "只打夜世界" or 配置数据["辅助运行模式"] == "先打满主世界再打夜世界" else False,
                 是否刷主世界=True if 配置数据["辅助运行模式"] == "只打主世界" or 配置数据[
                     "辅助运行模式"] == "先打满主世界再打夜世界" else False,
+                欲升级的英雄=配置数据.get("欲升级的英雄", []),  # 新加的字段
 
             )
         except ValueError as e:
@@ -617,6 +643,18 @@ class 增强型机器人控制界面:
             elif 配置.是否刷夜世界:
                 模式 = "只打夜世界"
             self.配置输入项["辅助运行模式"].set(模式)
+
+            # ---------- 新增：加载欲升级的英雄 ----------
+            欲升级英雄控件 = self.配置输入项["欲升级的英雄"]
+            # 先取消所有选中
+            欲升级英雄控件.selection_clear(0, tk.END)
+
+            # 根据配置选择对应的英雄
+            for idx, 英雄 in enumerate(欲升级英雄控件.get(0, tk.END)):
+
+                if 英雄 in 配置.欲升级的英雄:
+                    欲升级英雄控件.selection_set(idx)
+            #欲升级英雄控件.update()
 
             self._更新按钮状态()
 
