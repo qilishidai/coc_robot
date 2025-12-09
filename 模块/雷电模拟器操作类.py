@@ -337,10 +337,16 @@ class 雷电模拟器操作类:
             "--index", str(self.雷电模拟器索引),
             "--command", "shell getprop sys.boot_completed"
         ]
-
+        开始时间 = time.time()
+        最大等待时间 = 60 * 3  # 秒，可自行调整
         while True:
             with self._命令行锁:
+
                 结果 = subprocess.run(adb命令, stdout=subprocess.PIPE, encoding='gbk')
+
+            if time.time() - 开始时间 > 最大等待时间:
+                raise Exception("等待进入安卓系统超时")
+
             if 结果.stdout.strip() == '1':
                 print("adb返回安装系统已经启动")
                 break
