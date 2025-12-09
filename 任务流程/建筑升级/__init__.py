@@ -22,11 +22,11 @@ class 建筑升级任务(夜世界基础任务):
             # 先检查上次失败时间
             完整状态 = self.数据库.获取最新完整状态(self.机器人标志).状态数据
             上次失败 = 完整状态.get("建筑升级失败记录")
-            # if 上次失败:
-            #     失败时间 = datetime.fromtimestamp(上次失败.get("时间", 0))
-            #     if datetime.now() - 失败时间 < timedelta(hours=1):
-            #         self.上下文.置脚本状态("建筑升级任务小时内已失败过，不再重试,等过一小时后重试")
-            #         return False
+            if 上次失败:
+                失败时间 = datetime.fromtimestamp(上次失败.get("时间", 0))
+                if datetime.now() - 失败时间 < timedelta(hours=1):
+                    self.上下文.置脚本状态("建筑升级任务小时内已失败过，不再重试,等过一小时后重试")
+                    return False
 
 
             self.上下文.置脚本状态("开始执行循环建筑升级任务")
