@@ -338,9 +338,22 @@ class 增强型机器人控制界面:
             elif 类型 == 'spinbox':
                 控件 = ttk.Spinbox(配置表单, from_=默认值[0], to=默认值[1], increment=默认值[2])
             elif 类型 == 'listbox':
-                控件 = tk.Listbox(配置表单, selectmode=tk.MULTIPLE, height=min(5, len(默认值)))
+                # 创建容器框架
+                容器框架 = ttk.Frame(配置表单)
+                # 创建滚动条
+                滚动条 = ttk.Scrollbar(容器框架, orient=tk.VERTICAL)
+                # 创建Listbox并关联滚动条
+                实际listbox = tk.Listbox(容器框架, selectmode=tk.MULTIPLE, height=5, yscrollcommand=滚动条.set)
+                滚动条.config(command=实际listbox.yview)
+                # 填充数据
                 for 英雄 in 默认值:
-                    控件.insert(tk.END, 英雄)
+                    实际listbox.insert(tk.END, 英雄)
+                # 布局
+                实际listbox.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+                滚动条.pack(side=tk.RIGHT, fill=tk.Y)
+                # 将容器框架作为控件返回（需要特殊处理）
+                容器框架._listbox = 实际listbox  # 保存引用以便后续访问
+                控件 = 容器框架  # 将容器框架赋值给控件变量
 
             控件.grid(row=行, column=1, padx=5, pady=5, sticky=tk.EW)
             # 添加工具提示
@@ -446,7 +459,14 @@ class 增强型机器人控制界面:
     def 应用更改(self):
         配置数据 = {}
         for k, v in self.配置输入项.items():
-            if isinstance(v, tk.Listbox):
+            # 检查是否是包含listbox的容器框架
+            if hasattr(v, '_listbox'):
+                实际控件 = v._listbox
+                # 获取所有选中项的值
+                选中索引 = 实际控件.curselection()
+                选中值 = [实际控件.get(i) for i in 选中索引]
+                配置数据[k] = 选中值
+            elif isinstance(v, tk.Listbox):
                 # 获取所有选中项的值
                 选中索引 = v.curselection()
                 选中值 = [v.get(i) for i in 选中索引]
@@ -645,7 +665,9 @@ class 增强型机器人控制界面:
             self.配置输入项["辅助运行模式"].set(模式)
 
             # ---------- 新增：加载欲升级的英雄 ----------
-            欲升级英雄控件 = self.配置输入项["欲升级的英雄"]
+            欲升级英雄控件容器 = self.配置输入项["欲升级的英雄"]
+            # 获取实际的listbox控件
+            欲升级英雄控件 = 欲升级英雄控件容器._listbox if hasattr(欲升级英雄控件容器, '_listbox') else 欲升级英雄控件容器
             # 先取消所有选中
             欲升级英雄控件.selection_clear(0, tk.END)
 
