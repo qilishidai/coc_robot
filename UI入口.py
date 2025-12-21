@@ -9,7 +9,7 @@ from 数据库.任务数据库 import 机器人设置, 任务数据库
 from 线程.自动化机器人 import 自动化机器人
 from sv_ttk import set_theme
 
-from 调度器 import 任务调度器界面
+
 from 界面.自动启动界面 import 自动启动界面
 
 
