@@ -64,10 +64,6 @@ class 检查图像任务(基础任务):
             return True
 
         except Exception as e:
-            self.异常处理(上下文, e)
-            上下文.发送重启请求(str(e))
+            self.异常处理(上下文, e, 是否重启游戏=False)
             return False
-
-    def 异常处理(self, 上下文: '任务上下文', 异常: Exception):
-        上下文.置脚本状态(f"任务[{self.__class__.__name__}] 异常：{异常}")
 

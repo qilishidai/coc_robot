@@ -36,8 +36,3 @@ class 夜世界打鱼任务(基础任务):
             self.异常处理(上下文, e)
             return False
 
-    def 异常处理(self, 上下文: 任务上下文, 异常: Exception, **kwargs):
-        super().异常处理(上下文, 异常)
-        上下文.发送重启请求(f"任务[{self.__class__.__name__}] 触发了异常：{异常}")
-
-

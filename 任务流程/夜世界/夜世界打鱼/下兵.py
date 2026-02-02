@@ -79,10 +79,6 @@ class 下兵(夜世界基础任务):
         else:
             return False
 
-    def 异常处理(self, 异常: Exception,**关键字参数):
-        super().异常处理(异常)
-        self.上下文.发送重启请求(f"任务[{self.__class__.__name__}] 触发了异常：{异常}")
-
     @staticmethod
     def 生成随机坐标点(起点, 终点, 点数量=1, 最大扰动=5):
         起点x, 起点y = 起点

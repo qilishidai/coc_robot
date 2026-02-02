@@ -66,7 +66,7 @@ class 建筑升级任务(夜世界基础任务):
                 self.上下文.置脚本状态(f"已完成建筑升级: {self.当前建筑}")
 
         except Exception as e:
-            self.异常处理(e)
+            self.异常处理(e, 是否重启机器人=False)
             self.记录失败(f"任务异常: {str(e)}")
             return False
 

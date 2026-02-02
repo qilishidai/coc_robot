@@ -58,7 +58,8 @@ class 收集圣水车任务(夜世界基础任务):
                     if 找不到夜世界船的次数 > 5:
                         raise RuntimeError("无法定位圣水车位置")
         except RuntimeError as e:
-            return self._处理异常(e)
+            self.异常处理(e)
+            return False
 
     @staticmethod
     def 是否在危险区域内(x, y) -> bool:
@@ -72,12 +73,6 @@ class 收集圣水车任务(夜世界基础任务):
         # 检查是否超过最大失败次数
         if self.收集圣水连续出错次数 >= self.MAX_连续失败次数:
             raise RuntimeError(f"收集圣水连续失败超过{self.MAX_连续失败次数}次")
-
-    def _处理异常(self, 异常: Exception) -> bool:
-        """统一处理异常"""
-        super().异常处理(异常)
-        self.上下文.发送重启请求(f"任务[{self.__class__.__name__}] 异常: {异常}")
-        return False
 
     def 是否包含文本(self, result: list, target: str) -> bool:
         for item in result:

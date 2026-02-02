@@ -43,7 +43,3 @@ class 打开进攻页面(夜世界基础任务):
         else:
             return False
 
-    def 异常处理(self, 异常: Exception,**关键字参数):
-        super().异常处理(异常)
-        self.上下文.发送重启请求(f"任务[{self.__class__.__name__}] 触发了异常：{异常}")
-
