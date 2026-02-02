@@ -99,9 +99,10 @@ class 进攻任务(基础任务):
         self.检测器 = 线程安全YOLO检测器()
         self.模板识别 = 模板匹配引擎()
 
-    def 执行(self, 上下文: 任务上下文) -> bool:
+    def 执行(self) -> bool:
         """主执行流程：检测目标 -> 下兵 -> 下法术"""
         try:
+            上下文 = self.上下文
             # 1. 获取并检测目标
             全屏图像 = 上下文.op.获取屏幕图像cv(0, 0, 800, 600)
             检测结果列表 = self.检测器.检测(全屏图像)
@@ -120,7 +121,7 @@ class 进攻任务(基础任务):
 
             return True
         except Exception as 异常:
-            self.异常处理(上下文, 异常)
+            self.异常处理(异常)
             return False
 
     def 筛选有效目标(self, 上下文: 任务上下文, 检测结果列表: list) -> list:

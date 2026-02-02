@@ -22,21 +22,15 @@ class 资源不足错误(Exception):
 
 class 城墙升级任务(基础任务):
     """自动检测并升级城墙"""
-    def __init__(self, 上下文: '任务上下文',):
-        super().__init__(上下文)
-        self.ocr引擎 = 安全OCR引擎()
-        self.检测器 = 线程安全YOLO检测器()
-        self.模板识别 = 模板匹配引擎()
-        self.数据库 = 上下文.数据库
-        self.机器人标志 = 上下文.机器人标志
-        
+
     @property
     def 设置(self) -> 机器人设置:
         配置 = self.数据库.获取机器人设置(self.机器人标志)
         return 配置
 
-    def 执行(self, 上下文: 任务上下文) -> bool:
+    def 执行(self) -> bool:
         try:
+            上下文 = self.上下文
             # 初始化配置
             if not self.检查功能开启(上下文):
                 return True
@@ -48,11 +42,11 @@ class 城墙升级任务(基础任务):
 
             return True
         except 资源不足错误 as e:
-            上下文.置脚本状态(e.__str__())
+            self.上下文.置脚本状态(e.__str__())
             return False
         except Exception as e:
 
-            self.异常处理(上下文, e)
+            self.异常处理(e)
             return False
 
     def 刷一次墙(self):
@@ -111,7 +105,7 @@ class 城墙升级任务(基础任务):
 
     def 已够资源升级(self)-> bool:
         上下文=self.上下文
-        更新家乡资源状态任务(上下文).执行(上下文)
+        更新家乡资源状态任务(上下文).执行()
         当前金币 = 上下文.数据库.获取最新完整状态(上下文.机器人标志).状态数据["家乡资源"]["金币"]
         当前圣水 = 上下文.数据库.获取最新完整状态(上下文.机器人标志).状态数据["家乡资源"]["圣水"]
         刷墙起始金币= 上下文.数据库.获取机器人设置(上下文.机器人标志).刷墙起始金币

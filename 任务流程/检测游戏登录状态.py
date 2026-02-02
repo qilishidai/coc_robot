@@ -3,11 +3,14 @@ from 模块.检测.模板匹配器 import 模板匹配引擎
 
 class 检测游戏登录状态任务(基础任务):
 
-    def __init__(self):
+    def __init__(self, 上下文: '任务上下文'):
+        super().__init__(上下文)
         self.第一次检测游戏登录=True
+
     """等待游戏进入时返回"""
-    def 执行(self, 上下文: '任务上下文', 首次登录:bool=True) -> bool:
+    def 执行(self, 首次登录:bool=True) -> bool:
         """等待游戏进入时返回"""
+        上下文 = self.上下文
         识图引擎 = 模板匹配引擎()
 
         if 首次登录 == True:

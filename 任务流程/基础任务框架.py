@@ -15,6 +15,9 @@ from 核心.op import op类
 from 核心.键盘操作 import 键盘控制器
 from 核心.鼠标操作 import 鼠标控制器
 from 模块.雷电模拟器操作类 import 雷电模拟器操作类
+from 模块.检测.模板匹配器 import 模板匹配引擎
+from 模块.检测.OCR识别器 import 安全OCR引擎
+from 模块.检测.YOLO检测器 import 线程安全YOLO检测器
 
 @dataclass
 class 任务上下文:
@@ -157,26 +160,31 @@ from abc import ABC, abstractmethod
 
 
 class 基础任务(ABC):
-    """游戏任务基类"""
-    def __init__(self,上下文: '任务上下文'):
-        self.上下文=上下文
-        # 一些子类会在构造函数里初始化 模板识别；基类声明属性以通过类型检查
-        self.模板识别: Any = None
+    """游戏任务基类 - 统一的任务基类，自动初始化常用工具"""
+
+    def __init__(self, 上下文: '任务上下文'):
+        self.上下文 = 上下文
+        # 自动初始化常用工具
+        self.模板识别 = 模板匹配引擎()
+        self.ocr引擎 = 安全OCR引擎()
+        self.检测器 = 线程安全YOLO检测器()
+        # 便捷属性
+        self.数据库 = 上下文.数据库
+        self.机器人标志 = 上下文.机器人标志
 
     @abstractmethod
-    def 执行(self, 上下文: '任务上下文') -> bool:
+    def 执行(self) -> bool:
         """
+        执行任务主逻辑
         返回True继续下一个任务，返回False终止流程
         """
         pass
 
-
-
-    def 异常处理(self, 上下文: '任务上下文', 异常: Exception, 是否重启游戏=True, 是否重启机器人=True):
+    def 异常处理(self, 异常: Exception, 是否重启游戏=True, 是否重启机器人=True):
         """统一异常处理 - 委托给上下文处理"""
-        上下文.处理异常(self.__class__.__name__, 异常, 是否重启游戏, 是否重启机器人)
+        self.上下文.处理异常(self.__class__.__name__, 异常, 是否重启游戏, 是否重启机器人)
 
-    def 已出现图片(self, 模板路径: str, 区域: Tuple[int, int, int, int] = (0, 0, 800, 600),相似度阈值=0.9) -> Tuple[
+    def 是否出现图片(self, 模板路径: str, 区域: Tuple[int, int, int, int] = (0, 0, 800, 600), 相似度阈值=0.9) -> Tuple[
         bool, Tuple[int, int]]:
         """
         当前机器人操作的模拟器是否出现指定图片，并返回坐标。
@@ -188,8 +196,6 @@ class 基础任务(ABC):
         返回:
             是否匹配, (x, y) 坐标
         """
-        if self.模板识别 is None:
-            raise RuntimeError("模板识别引擎未初始化")
         x1, y1, x2, y2 = 区域
         屏幕图像 = self.上下文.op.获取屏幕图像cv(x1, y1, x2, y2)
         是否匹配, (x, y), _ = self.模板识别.执行匹配(屏幕图像, 模板路径, 相似度阈值)
@@ -199,3 +205,17 @@ class 基础任务(ABC):
             return True, (x + x1, y + y1)
         else:
             return False, (x + x1, y + y1)
+
+    # 兼容旧方法名
+    已出现图片 = 是否出现图片
+
+    def 执行OCR识别(self, 区域: Tuple[int, int, int, int] = (0, 0, 800, 600)) -> list:
+        """执行屏幕OCR识别"""
+        try:
+            x1, y1, x2, y2 = 区域
+            屏幕图像 = self.上下文.op.获取屏幕图像cv(x1, y1, x2, y2)
+            ocr结果, _ = self.ocr引擎(屏幕图像)
+            return ocr结果 if ocr结果 is not None else []
+        except Exception as e:
+            self.上下文.置脚本状态(f"OCR识别失败: {str(e)}")
+            return []

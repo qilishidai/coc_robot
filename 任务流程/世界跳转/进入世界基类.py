@@ -12,16 +12,17 @@ class 滑动配置:
     终点: tuple[int, int]
 
 class 进入世界任务基类(基础任务):
-    def __init__(self, 判断图标路径: str, 船模板路径: str, 状态文本: str,滑动参数: 滑动配置):
-        self.模板识别 = 模板匹配引擎()
+    def __init__(self, 上下文: 任务上下文, 判断图标路径: str, 船模板路径: str, 状态文本: str,滑动参数: 滑动配置):
+        super().__init__(上下文)
         self.判断图标路径 = 判断图标路径
         self.船模板路径 = 船模板路径
         self.状态文本 = 状态文本
         self.滑动配置 = 滑动参数
 
-    def 执行(self, 上下文: 任务上下文) -> bool:
+    def 执行(self) -> bool:
         try:
-            if self.是否在目标世界(上下文):
+            上下文 = self.上下文
+            if self.是否在目标世界():
                 上下文.置脚本状态(f"已经在{self.状态文本}")
                 return True
             else:
@@ -39,7 +40,7 @@ class 进入世界任务基类(基础任务):
                     上下文.点击(x, y)
                     上下文.脚本延时(500)
 
-                if self.是否在目标世界(上下文):
+                if self.是否在目标世界():
                     上下文.置脚本状态(f"成功进入{self.状态文本}")
                     return True
 
@@ -54,12 +55,12 @@ class 进入世界任务基类(基础任务):
 
             raise RuntimeError(f"操作超时：未找到{self.状态文本}入口")
         except Exception as e:
-            self.异常处理(上下文, e)
+            self.异常处理(e)
             return False
 
 
-    def 是否在目标世界(self, 上下文: 任务上下文) -> bool:
-        屏幕图像 = 上下文.op.获取屏幕图像cv(0, 0, 800, 600)
+    def 是否在目标世界(self) -> bool:
+        屏幕图像 = self.上下文.op.获取屏幕图像cv(0, 0, 800, 600)
         是否匹配, _, _ = self.模板识别.执行匹配(屏幕图像, self.判断图标路径, 相似度阈值=0.9)
         return 是否匹配
 

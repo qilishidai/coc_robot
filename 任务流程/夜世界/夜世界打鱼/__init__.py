@@ -8,12 +8,10 @@ from 模块.检测.模板匹配器 import 模板匹配引擎
 
 class 夜世界打鱼任务(基础任务):
     """注释字符"""
-    def __init__(self, 上下文: 任务上下文):
-        super().__init__(上下文)
-        self.模板识别 = 模板匹配引擎()
 
-    def 执行(self, 上下文: 任务上下文) -> bool:
+    def 执行(self) -> bool:
         """执行进入夜世界的主逻辑"""
+        上下文 = self.上下文
         上下文.置脚本状态("夜世界打鱼任务")
         try:
             任务列表 = [
@@ -33,6 +31,6 @@ class 夜世界打鱼任务(基础任务):
             return True
 
         except RuntimeError as e:
-            self.异常处理(上下文, e)
+            self.异常处理(e)
             return False
 

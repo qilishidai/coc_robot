@@ -7,13 +7,9 @@ import random
 
 class 更新家乡资源状态任务(基础任务):
     """自动检测并升级城墙"""
-    def __init__(self, 上下文: '任务上下文'):
-        super().__init__(上下文)
-        self.ocr引擎 = 安全OCR引擎()
-        self.检测器 = 线程安全YOLO检测器()
-        self.模板识别 = 模板匹配引擎()
 
-    def 执行(self, 上下文: 任务上下文) -> bool:
+    def 执行(self) -> bool:
+        上下文 = self.上下文
         上下文.脚本延时(random.randint(500, 1000))#等待资源界面数字固定再执行识别
         资源字典=self.识别当前资源(上下文)
         上下文.置脚本状态("主世界资源识别结果："+str(资源字典))
