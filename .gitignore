@@ -61,3 +61,6 @@ __pypackages__/
 数据库/任务系统.db-wal
 /自动启动配置.json
 /最新远程版本缓存.txt
+/自动启动脚本/启动_模拟器索引0.bat
+/CLAUDE.md
+/.claude/settings.local.json
