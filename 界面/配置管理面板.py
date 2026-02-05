@@ -1,16 +1,11 @@
 """
 配置管理面板模块 - 机器人配置表单和CRUD操作
-
-基础配置（机器人标识、模拟器索引、服务器）手动定义；
-任务配置根据任务元数据自动生成UI。
 """
 import tkinter as tk
 from tkinter import ttk, messagebox
 from typing import Callable, Optional
 from 工具包.工具函数 import 工具提示
 from 数据库.任务数据库 import 机器人设置
-from 界面.任务配置UI生成器 import 任务配置界面生成器
-from 任务流程.任务元数据注册 import 已注册任务元数据
 
 
 class 配置管理面板(ttk.Frame):
@@ -32,94 +27,79 @@ class 配置管理面板(ttk.Frame):
         self.列表刷新回调 = 列表刷新回调
 
         self.当前机器人ID: Optional[str] = None
-        self.配置输入项 = {}  # 基础配置控件
+        self.配置输入项 = {}
 
         self._创建界面()
 
     def _创建界面(self):
         """创建配置表单和按钮"""
-        # ===== 滚动容器 =====
-        画布 = tk.Canvas(self, highlightthickness=0)
-        滚动条 = ttk.Scrollbar(self, orient="vertical", command=画布.yview)
-        self.滚动框架 = ttk.Frame(画布)
+        配置表单 = ttk.Frame(self)
+        配置表单.pack(pady=10, padx=10, fill=tk.X)
 
-        self.滚动框架.bind(
-            "<Configure>",
-            lambda e: 画布.configure(scrollregion=画布.bbox("all"))
-        )
-        画布.create_window((0, 0), window=self.滚动框架, anchor="nw")
-        画布.configure(yscrollcommand=滚动条.set)
-
-        # 鼠标滚轮绑定
-        def _滚轮事件(event):
-            画布.yview_scroll(int(-1 * (event.delta / 120)), "units")
-        画布.bind_all("<MouseWheel>", _滚轮事件)
-
-        画布.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-        滚动条.pack(side=tk.RIGHT, fill=tk.Y)
-
-        # ===== 基础配置区 =====
-        self._创建基础配置区()
-
-        # ===== 任务配置区（自动生成）=====
-        self._创建任务配置区()
-
-        # ===== 按钮区 =====
-        self._创建按钮区()
-
-    def _创建基础配置区(self):
-        """创建基础配置区：机器人标识、模拟器索引、服务器"""
-        基础框架 = ttk.LabelFrame(self.滚动框架, text="基础配置", padding=10)
-        基础框架.pack(pady=5, padx=10, fill=tk.X)
-
-        基础配置项 = [
+        英雄列表 = ["野蛮人之王", "弓箭女皇", "亡灵王子", "飞盾战神", "大守护者"]
+        配置项定义 = [
             ('机器人标识', 'entry', 'robot_', '用于区分不同机器人的唯一名称'),
-            ('模拟器索引', 'spinbox', (0, 99, 1), '对应雷电多开器中的模拟器ID，0表示第一个模拟器'),
-            ('服务器', 'combo', ['国际服', '国服'], '选择游戏服务器版本，目前只支持国际服'),
+            ('模拟器索引', 'spinbox', (0, 99, 1), '对应雷电多开器中的模拟器ID，0表示第一个模拟器,如果不明白请设置为0'),
+            ('服务器', 'combo', ['国际服', '国服'], '选择游戏服务器版本,目前只支持国际服'),
+            ('最小资源', 'entry', '200000', '搜索村庄对方必须高过的资源总量,超过该值才会触发进攻'),
+            ('进攻资源边缘靠近比例下限', 'entry', '0.6', '在被识别到的资源建筑中，它们靠近地图边缘的比例达到此值时，才认为"资源建筑够靠边"，满足进攻条件。范围是0到1，高本建议设为0.6，低本可设为0.0。可以理解为当这个值比较大时辅助只打外围采集器'),
+            ('是否开启刷墙', 'combo', ['开启', '关闭'], '是否使用金币或圣水刷墙'),
+            ('刷墙起始金币', 'entry', '200000', '金币高于此数值触发刷墙任务'),
+            ('刷墙起始圣水', 'entry', '200000', '圣水高于此数值触发刷墙任务,但是请注意,如果是低本,请将此值设置得足够大,以免触发圣水刷墙,但是目前还不能够圣水刷墙造成错误'),
+            ('辅助运行模式', 'combo', ['只打主世界', '只打夜世界','先打满主世界再打夜世界'], '打鱼模式,字面意思,打满后辅助会停止运行.'),
+            ('是否刷天鹰火炮', 'combo', ['关闭', '开启'], '开启后会自动搜索天鹰火炮并使用雷电法术攻击，用于刷成就'),
+            ('欲升级的英雄', 'listbox', 英雄列表, '选择想要升级的英雄，可多选或选择默认')
         ]
 
-        for 行, (标签, 类型, 默认值, 提示文本) in enumerate(基础配置项):
-            ttk.Label(基础框架, text=f"{标签}：").grid(row=行, column=0, padx=5, pady=5, sticky=tk.E)
+        for 行, (标签, 类型, 默认值, 提示文本) in enumerate(配置项定义):
+            ttk.Label(配置表单, text=f"{标签}：").grid(row=行, column=0, padx=5, pady=5, sticky=tk.E)
 
             if 类型 == 'entry':
-                控件 = ttk.Entry(基础框架)
+                控件 = ttk.Entry(配置表单)
                 控件.insert(0, 默认值)
             elif 类型 == 'combo':
-                控件 = ttk.Combobox(基础框架, values=默认值, font=("微软雅黑", 10))
+                控件 = ttk.Combobox(配置表单, values=默认值, font=("微软雅黑", 10))
                 控件.current(0)
             elif 类型 == 'spinbox':
-                控件 = ttk.Spinbox(基础框架, from_=默认值[0], to=默认值[1], increment=默认值[2])
+                控件 = ttk.Spinbox(配置表单, from_=默认值[0], to=默认值[1], increment=默认值[2])
+            elif 类型 == 'listbox':
+                # 创建容器框架
+                容器框架 = ttk.Frame(配置表单)
+                # 创建滚动条
+                滚动条 = ttk.Scrollbar(容器框架, orient=tk.VERTICAL)
+                # 创建Listbox并关联滚动条
+                实际listbox = tk.Listbox(容器框架, selectmode=tk.MULTIPLE, height=5, yscrollcommand=滚动条.set)
+                滚动条.config(command=实际listbox.yview)
+                # 填充数据
+                for 英雄 in 默认值:
+                    实际listbox.insert(tk.END, 英雄)
+                # 布局
+                实际listbox.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+                滚动条.pack(side=tk.RIGHT, fill=tk.Y)
+                # 将容器框架作为控件返回（需要特殊处理）
+                容器框架._listbox = 实际listbox  # 保存引用以便后续访问
+                控件 = 容器框架  # 将容器框架赋值给控件变量
 
             控件.grid(row=行, column=1, padx=5, pady=5, sticky=tk.EW)
+            # 添加工具提示
             工具提示(控件, 提示文本)
+
             self.配置输入项[标签] = 控件
+            ttk.Label(配置表单, text="*" if 标签 == "机器人标识" else "").grid(row=行, column=2, sticky=tk.W)
 
-            if 标签 == "机器人标识":
-                ttk.Label(基础框架, text="*").grid(row=行, column=2, sticky=tk.W)
-
-        基础框架.columnconfigure(1, weight=1)
-
-    def _创建任务配置区(self):
-        """创建任务配置区：根据元数据自动生成"""
-        任务配置容器 = ttk.Frame(self.滚动框架)
-        任务配置容器.pack(pady=5, padx=10, fill=tk.X)
-
-        self.任务配置生成器 = 任务配置界面生成器(任务配置容器, self.数据库)
-        self.任务配置生成器.生成元数据批量配置界面(已注册任务元数据, 任务配置容器)
-
-    def _创建按钮区(self):
-        """创建操作按钮"""
-        按钮框架 = ttk.Frame(self.滚动框架)
-        按钮框架.pack(pady=10, padx=10, fill=tk.X)
+        # 按钮框架
+        按钮框架 = ttk.Frame(self)
+        按钮框架.pack(pady=10, fill=tk.X)
 
         # 状态显示标签
         self.配置状态标签 = ttk.Label(按钮框架, text="就绪", foreground="#666")
         self.配置状态标签.pack(side=tk.LEFT, padx=50)
 
-        # 按钮容器
+        # 按钮容器（右对齐）
         操作按钮容器 = ttk.Frame(按钮框架)
         操作按钮容器.pack(side=tk.LEFT)
 
+        # 动态按钮组
         self.主操作按钮 = ttk.Button(
             操作按钮容器,
             text="新建机器人",
@@ -151,10 +131,6 @@ class 配置管理面板(ttk.Frame):
         if not self.当前机器人ID:
             return
 
-        # 尝试迁移旧数据
-        self.数据库.迁移机器人设置到任务参数(self.当前机器人ID)
-
-        # 加载基础配置
         if 配置 := self.数据库.获取机器人设置(self.当前机器人ID):
             self.配置输入项["机器人标识"].delete(0, tk.END)
             self.配置输入项["机器人标识"].insert(0, self.当前机器人ID)
@@ -164,8 +140,43 @@ class 配置管理面板(ttk.Frame):
 
             self.配置输入项["服务器"].set(配置.服务器)
 
-        # 加载任务配置（由生成器自动从任务参数表读取）
-        self.任务配置生成器.设置机器人标志(self.当前机器人ID)
+            self.配置输入项["最小资源"].delete(0, tk.END)
+            self.配置输入项["最小资源"].insert(0, str(配置.欲进攻的最小资源))
+
+            self.配置输入项["进攻资源边缘靠近比例下限"].delete(0, tk.END)
+            self.配置输入项["进攻资源边缘靠近比例下限"].insert(0, str(配置.欲进攻资源建筑靠近地图边缘最小比例))
+
+            self.配置输入项["是否开启刷墙"].set("开启" if 配置.开启刷墙 else "关闭")
+
+            self.配置输入项["刷墙起始金币"].delete(0, tk.END)
+            self.配置输入项["刷墙起始金币"].insert(0, str(配置.刷墙起始金币))
+
+            self.配置输入项["刷墙起始圣水"].delete(0, tk.END)
+            self.配置输入项["刷墙起始圣水"].insert(0, str(配置.刷墙起始圣水))
+
+            模式 = "先打满主世界再打夜世界"
+            if 配置.是否刷主世界 and 配置.是否刷夜世界:
+                模式 = "先打满主世界再打夜世界"
+            elif 配置.是否刷主世界:
+                模式 = "只打主世界"
+            elif 配置.是否刷夜世界:
+                模式 = "只打夜世界"
+            self.配置输入项["辅助运行模式"].set(模式)
+
+            # 加载天鹰火炮配置
+            self.配置输入项["是否刷天鹰火炮"].set("开启" if getattr(配置, '是否刷天鹰火炮', False) else "关闭")
+
+            # 加载欲升级的英雄
+            欲升级英雄控件容器 = self.配置输入项["欲升级的英雄"]
+            # 获取实际的listbox控件
+            欲升级英雄控件 = 欲升级英雄控件容器._listbox if hasattr(欲升级英雄控件容器, '_listbox') else 欲升级英雄控件容器
+            # 先取消所有选中
+            欲升级英雄控件.selection_clear(0, tk.END)
+
+            # 根据配置选择对应的英雄
+            for idx, 英雄 in enumerate(欲升级英雄控件.get(0, tk.END)):
+                if 英雄 in 配置.欲升级的英雄:
+                    欲升级英雄控件.selection_set(idx)
 
     def 清空表单(self):
         """重置为新建模式"""
@@ -175,15 +186,18 @@ class 配置管理面板(ttk.Frame):
 
     def 新建机器人(self):
         """清空表单并设置默认值"""
-        # 基础配置重置
-        self.配置输入项["机器人标识"].delete(0, tk.END)
-        self.配置输入项["机器人标识"].insert(0, "robot_")
-        self.配置输入项["模拟器索引"].delete(0, tk.END)
-        self.配置输入项["模拟器索引"].insert(0, "0")
-        self.配置输入项["服务器"].current(0)
-
-        # 任务配置重置（使用空机器人标志触发默认值）
-        self.任务配置生成器.设置机器人标志("")
+        for 标签, 控件 in self.配置输入项.items():
+            if 标签 == "机器人标识":
+                控件.delete(0, tk.END)
+                控件.insert(0, "robot_")
+            elif 标签 == "模拟器索引":
+                控件.delete(0, tk.END)
+                控件.insert(0, "0")
+            elif 标签 == "服务器":
+                控件.current(0)
+            elif 标签 == "最小资源":
+                控件.delete(0, tk.END)
+                控件.insert(0, "200000")
 
     def _更新按钮状态(self):
         """更新按钮文本和状态标签"""
@@ -226,37 +240,50 @@ class 配置管理面板(ttk.Frame):
 
     def 应用更改(self):
         """收集表单数据并保存"""
-        # 收集基础配置
-        标识 = self.配置输入项["机器人标识"].get().strip()
-        if not 标识:
+        配置数据 = {}
+        for k, v in self.配置输入项.items():
+            # 检查是否是包含listbox的容器框架
+            if hasattr(v, '_listbox'):
+                实际控件 = v._listbox
+                # 获取所有选中项的值
+                选中索引 = 实际控件.curselection()
+                选中值 = [实际控件.get(i) for i in 选中索引]
+                配置数据[k] = 选中值
+            elif isinstance(v, tk.Listbox):
+                # 获取所有选中项的值
+                选中索引 = v.curselection()
+                选中值 = [v.get(i) for i in 选中索引]
+                配置数据[k] = 选中值
+            else:
+                配置数据[k] = v.get()
+
+        if not 配置数据["机器人标识"].strip():
             messagebox.showerror("错误", "机器人标识不能为空！")
             return
 
         try:
             新配置 = 机器人设置(
-                雷电模拟器索引=int(self.配置输入项["模拟器索引"].get()),
-                服务器=self.配置输入项["服务器"].get(),
+                雷电模拟器索引=int(配置数据["模拟器索引"]),
+                服务器=配置数据["服务器"],
+                欲进攻的最小资源=int(配置数据["最小资源"]),
+                开启刷墙=True if 配置数据["是否开启刷墙"] == "开启" else False,
+                刷墙起始金币=int(配置数据["刷墙起始金币"]),
+                刷墙起始圣水=int(配置数据["刷墙起始圣水"]),
+                欲进攻资源建筑靠近地图边缘最小比例=float(配置数据["进攻资源边缘靠近比例下限"]),
+                是否刷夜世界=True if 配置数据["辅助运行模式"] == "只打夜世界" or 配置数据["辅助运行模式"] == "先打满主世界再打夜世界" else False,
+                是否刷主世界=True if 配置数据["辅助运行模式"] == "只打主世界" or 配置数据["辅助运行模式"] == "先打满主世界再打夜世界" else False,
+                是否刷天鹰火炮=True if 配置数据.get("是否刷天鹰火炮") == "开启" else False,
+                欲升级的英雄=配置数据.get("欲升级的英雄", []),
             )
         except ValueError as e:
             messagebox.showerror("配置错误", f"数值格式错误: {str(e)}")
             return
 
-        # 确定目标机器人标志
-        目标标志 = 标识
-
-        # 保存任务配置（通过生成器）
-        self.任务配置生成器.机器人标志 = 目标标志
-        try:
-            self.任务配置生成器.保存所有参数()
-        except (ValueError, TypeError) as e:
-            messagebox.showerror("配置错误", f"任务参数格式错误: {str(e)}")
-            return
-
         # 判断是新建还是更新
         if self.当前机器人ID is None:
-            self._创建新机器人(目标标志, 新配置)
+            self._创建新机器人(配置数据["机器人标识"], 新配置)
         else:
-            self._更新机器人配置(目标标志, 新配置)
+            self._更新机器人配置(配置数据["机器人标识"], 新配置)
         self._更新按钮状态()
 
     def _创建新机器人(self, 标识: str, 配置: 机器人设置):
