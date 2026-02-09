@@ -340,7 +340,8 @@ class 配置管理面板(ttk.Frame):
         elif UI类型 == "combo":
             选项 = 元数据.get("选项", [])
             控件 = ttk.Combobox(父容器, values=选项, state="readonly")
-            if 默认值 and 默认值 in 选项:
+            # 使用 is not None 检查，允许空字符串作为有效默认值
+            if 默认值 is not None and 默认值 in 选项:
                 控件.set(默认值)
             elif 选项:
                 控件.current(0)
@@ -403,14 +404,18 @@ class 配置管理面板(ttk.Frame):
             控件.set("开启" if 值 else "关闭")
         elif UI类型 == "editable_list":
             控件.set(值 if isinstance(值, list) else [])
+        elif UI类型 == "combo":
+            # combo类型需要显式处理，使用 is not None 允许空字符串值
+            控件.set(值 if 值 is not None else "")
+        elif isinstance(控件, ttk.Spinbox):
+            # Spinbox是Entry的子类，必须在Entry之前检查
+            控件.delete(0, tk.END)
+            控件.insert(0, str(值) if 值 is not None else "0")
         elif isinstance(控件, ttk.Entry):
             控件.delete(0, tk.END)
             控件.insert(0, str(值) if 值 is not None else "")
-        elif isinstance(控件, ttk.Spinbox):
-            控件.delete(0, tk.END)
-            控件.insert(0, str(值) if 值 is not None else "0")
         elif isinstance(控件, ttk.Combobox):
-            控件.set(值 if 值 else "")
+            控件.set(值 if 值 is not None else "")
 
     def 载入配置(self, 机器人ID: Optional[str]):
         """加载指定机器人配置到表单"""
