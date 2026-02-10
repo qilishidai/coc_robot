@@ -1,10 +1,10 @@
 # ==== 数据库管理 ====
 import json
 import os
-import   进口   进口 sqlite3
-import   进口   进口 time
-from dataclasses import   进口   进口 dataclass, field
-from typing import   进口   进口 List, Dict, Any, Optional
+import sqlite3
+import time
+from dataclasses import dataclass, field
+from typing import List, Dict, Any, Optional
 
 @dataclass
 class 任务日志:
@@ -33,7 +33,7 @@ class 机器人设置:
             "显示名称": "服务器",
             "描述": "选择游戏服务器版本，目前只支持国际服",
             "UI类型": "combo",
-            "选项": ["国际服", "调试服务器"]
+            "选项": ["国际服", "国服"]
         }
     )
 
@@ -66,7 +66,7 @@ class 机器人设置:
 
     开启刷墙: bool = field(
         default=False,
-        metadata={   元数据= {
+        metadata={
             "显示名称": "是否开启刷墙",
             "描述": "是否使用金币或圣水刷墙",
             "UI类型": "bool"
@@ -75,7 +75,7 @@ class 机器人设置:
 
     刷墙起始金币: int = field(
         default=100000,
-        metadata={   元数据= {
+        metadata={
             "显示名称": "刷墙起始金币",
             "描述": "金币高于此数值触发刷墙任务",
             "UI类型": "entry"
@@ -84,7 +84,7 @@ class 机器人设置:
 
     刷墙起始圣水: int = field(
         default=100000,
-        metadata={   元数据= {
+        metadata={
             "显示名称": "刷墙起始圣水",
             "描述": "圣水高于此数值触发刷墙任务，低本建议设置较大值避免误触发",
             "UI类型": "entry"
@@ -93,7 +93,7 @@ class 机器人设置:
 
     是否刷主世界: bool = field(
         default=True,
-        metadata={   元数据= {
+        metadata={
             "显示名称": "是否刷主世界",
             "描述": "是否启用主世界打鱼模式",
             "UI类型": "bool"
@@ -102,7 +102,7 @@ class 机器人设置:
 
     是否刷夜世界: bool = field(
         default=False,
-        metadata={   元数据= {
+        metadata={
             "显示名称": "是否刷夜世界",
             "描述": "是否启用夜世界打鱼模式",
             "UI类型": "bool"
@@ -111,7 +111,7 @@ class 机器人设置:
 
     是否刷天鹰火炮: bool = field(
         default=False,
-        metadata={   元数据= {
+        metadata={
             "显示名称": "是否刷天鹰火炮",
             "描述": "开启后会自动搜索天鹰火炮并使用雷电法术攻击，用于刷成就",
             "UI类型": "bool"
@@ -119,16 +119,16 @@ class 机器人设置:
     )
     是否快速刷资源: bool = field(
         default=False,
-        metadata={   元数据= {
+        metadata={
             "显示名称": "是否快速刷资源",
-            "描述": "开启后会快速刷资源,兵种必须为战神(武神),大概14秒进攻完一次",
+            "描述": "开启后会快速刷资源，兵种必须为武神(战神),大概14秒进攻完毕",
             "UI类型": "bool"
         }
     )
 
     欲升级的英雄或建筑: List[str] = field(
         default_factory=lambda: ["弓箭女皇", "亡灵王子", "飞盾战神"],
-        metadata={   元数据= {
+        metadata={
             "显示名称": "欲升级的英雄或建筑",
             "描述": "选择想要升级的英雄或建筑，可多选、添加自定义项",
             "UI类型": "editable_list",
@@ -137,8 +137,8 @@ class 机器人设置:
     )
 
     是否升级建议升级的建筑: bool = field(
-        default=True,   默认= True,
-        metadata={   元数据= {
+        default=True,
+        metadata={
             "显示名称": "升级建议建筑",
             "描述": "是否自动升级系统建议的建筑",
             "UI类型": "bool"
@@ -172,44 +172,6 @@ class 机器人设置:
             "UI类型": "entry"
         }
     )
-
-    欲升级的兵种或法术: str = field(
-        default="",
-        metadata={
-            "显示名称": "要自动升级的兵种或法术",
-            "描述": "选择要自动研究升级的兵种或法术，空白则不启动自动升级",
-            "UI类型": "combo",
-            "选项": [
-                "",
-                # 圣水兵种
-                "野蛮人", "弓箭手", "哥布林", "巨人", "炸弹人", "气球兵",
-                "法师", "天使", "飞龙", "皮卡超人", "飞龙宝宝", "掘地矿工",
-                "雷电飞龙", "大雪怪", "龙骑士", "雷霆泰坦", "根蔓骑士",
-                "巨矛投手", "陨石戈仑",
-                # 黑油兵种
-                "亡灵", "野猪骑士", "瓦基丽武神", "戈仑石人", "女巫",
-                "熔岩猎犬", "飞龙骑士", "蝙蝠法师", "冰冻人", "投石战车",
-                "龙骑士", "暗夜女巫", "猎手",
-                # 攻城器械
-                "攻城飞艇", "攻城战车", "攻城气球", "圣水石", "攻城钻机",
-                # 法术
-                "闪电法术", "治疗法术", "狂暴法术", "弹跳法术", "冰冻法术",
-                "隐形法术", "回溯法术", "圣水超载法术",
-                "毒药法术", "地震法术", "加速法术", "骷髅法术", "蝙蝠法术",
-                "寒冰法术", "召回法术", "愤怒法术"
-            ]
-        }
-    )
-
-    研究升级检查间隔: float = field(
-        default=1.0,
-        metadata={
-            "显示名称": "研究升级检查间隔(小时)",
-            "描述": "检查兵种或法术研究升级的时间间隔，单位为小时，0表示每次都检查",
-            "UI类型": "entry"
-        }
-    )
-
     是否采集进攻界面图像: bool = field(
         default=False,
         metadata={
