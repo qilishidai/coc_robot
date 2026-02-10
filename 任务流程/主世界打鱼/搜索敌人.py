@@ -17,7 +17,7 @@ class 搜索目标敌人任务(基础任务):
     def __init__(self, 上下文):
         super().__init__(上下文)
         # 创建数据集目录
-        self.数据集目录 = Path("dataset/raw")
+        self.数据集目录 = Path("数据集")
         self.数据集目录.mkdir(parents=True, exist_ok=True)
         self.目录文件数 = len(list(self.数据集目录.glob("*.png")))
 
