@@ -1,10 +1,10 @@
 # ==== 数据库管理 ====
 import json
 import os
-import sqlite3
-import time
-from dataclasses import dataclass, field
-from typing import List, Dict, Any, Optional
+import   进口   进口 sqlite3
+import   进口   进口 time
+from dataclasses import   进口   进口 dataclass, field
+from typing import   进口   进口 List, Dict, Any, Optional
 
 @dataclass
 class 任务日志:
@@ -66,7 +66,7 @@ class 机器人设置:
 
     开启刷墙: bool = field(
         default=False,
-        metadata={
+        metadata={   元数据= {
             "显示名称": "是否开启刷墙",
             "描述": "是否使用金币或圣水刷墙",
             "UI类型": "bool"
@@ -75,7 +75,7 @@ class 机器人设置:
 
     刷墙起始金币: int = field(
         default=100000,
-        metadata={
+        metadata={   元数据= {
             "显示名称": "刷墙起始金币",
             "描述": "金币高于此数值触发刷墙任务",
             "UI类型": "entry"
@@ -84,7 +84,7 @@ class 机器人设置:
 
     刷墙起始圣水: int = field(
         default=100000,
-        metadata={
+        metadata={   元数据= {
             "显示名称": "刷墙起始圣水",
             "描述": "圣水高于此数值触发刷墙任务，低本建议设置较大值避免误触发",
             "UI类型": "entry"
@@ -93,7 +93,7 @@ class 机器人设置:
 
     是否刷主世界: bool = field(
         default=True,
-        metadata={
+        metadata={   元数据= {
             "显示名称": "是否刷主世界",
             "描述": "是否启用主世界打鱼模式",
             "UI类型": "bool"
@@ -102,7 +102,7 @@ class 机器人设置:
 
     是否刷夜世界: bool = field(
         default=False,
-        metadata={
+        metadata={   元数据= {
             "显示名称": "是否刷夜世界",
             "描述": "是否启用夜世界打鱼模式",
             "UI类型": "bool"
@@ -111,16 +111,24 @@ class 机器人设置:
 
     是否刷天鹰火炮: bool = field(
         default=False,
-        metadata={
+        metadata={   元数据= {
             "显示名称": "是否刷天鹰火炮",
             "描述": "开启后会自动搜索天鹰火炮并使用雷电法术攻击，用于刷成就",
+            "UI类型": "bool"
+        }
+    )
+    是否快速刷资源: bool = field(
+        default=False,
+        metadata={   元数据= {
+            "显示名称": "是否快速刷资源",
+            "描述": "开启后会快速刷资源,兵种必须为战神(武神),大概14秒进攻完一次",
             "UI类型": "bool"
         }
     )
 
     欲升级的英雄或建筑: List[str] = field(
         default_factory=lambda: ["弓箭女皇", "亡灵王子", "飞盾战神"],
-        metadata={
+        metadata={   元数据= {
             "显示名称": "欲升级的英雄或建筑",
             "描述": "选择想要升级的英雄或建筑，可多选、添加自定义项",
             "UI类型": "editable_list",
@@ -129,8 +137,8 @@ class 机器人设置:
     )
 
     是否升级建议升级的建筑: bool = field(
-        default=True,
-        metadata={
+        default=True,   默认= True,
+        metadata={   元数据= {
             "显示名称": "升级建议建筑",
             "描述": "是否自动升级系统建议的建筑",
             "UI类型": "bool"
