@@ -67,7 +67,7 @@ def 是否夜世界资源打满(资源字典: dict) -> bool:
             是打满(资源字典.get("圣水", 0))
     )
 
-def 识别单行(ocr引擎, img):
+def 单行资源识别(ocr引擎, img):
     img = cv2.resize(img, None, fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     binary = cv2.adaptiveThreshold(

@@ -5,7 +5,7 @@ import cv2
 
 from 任务流程.基础任务框架 import 任务上下文, 基础任务
 from 任务流程.主世界打鱼.进攻坐标逻辑计算 import 坐标, 判断目标点到可进攻边缘距离是否小于设定值
-from 工具包.工具函数 import 打印运行耗时, 识别单行
+from 工具包.工具函数 import 打印运行耗时, 单行资源识别
 from 模块.检测.OCR识别器 import 安全OCR引擎
 from 模块.检测.YOLO检测器 import 线程安全YOLO检测器
 from 模块.检测.模板匹配器 import 模板匹配引擎
@@ -200,22 +200,18 @@ class 搜索目标敌人任务(基础任务):
         try:
             全屏图像 = 上下文.op.获取屏幕图像cv(14,67,151,146)
 
-            h = 全屏图像.shape[0]
-            row_h = h // 3
-
-            金币图 = 全屏图像[0:row_h, :]
-            圣水图 = 全屏图像[row_h:row_h*2, :]
-            黑油图 = 全屏图像[row_h*2:h, :]
-
-            金币文本 = 识别单行(self.ocr引擎, 金币图)
-            圣水文本 = 识别单行(self.ocr引擎, 圣水图)
-            黑油文本 = 识别单行(self.ocr引擎, 黑油图)
+            # 单次OCR识别（结果按顺序对应各区域）
+            result, _ = self.ocr引擎(全屏图像)
+            # 解析结果（假设OCR按行返回）
+            金币文本 = str(result[0][1]) if len(result) > 0 else "0"
+            圣水文本 = str(result[1][1]) if len(result) > 1 else "0"
+            黑油文本 = str(result[2][1]) if len(result) > 2 else "0"
 
             return {
-                "金币": 金币文本,
-                "圣水": 圣水文本,
-                "黑油": 黑油文本,
-                "总资源": 金币文本 + 圣水文本
+                "金币": self.文本转数值(金币文本),
+                "圣水": self.文本转数值(圣水文本),
+                "黑油": self.文本转数值(黑油文本),
+                "总资源": self.文本转数值(金币文本) + self.文本转数值(圣水文本)
             }
         except Exception as e:
             上下文.置脚本状态(f"资源识别失败: {str(e)}")
