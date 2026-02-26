@@ -176,7 +176,7 @@ class 自动启动管理器:
         bat内容 += f"python 主入口.py --机器人 标志={机器人标识}\n"
 
         # 写入文件
-        with open(bat文件路径, 'w', encoding='gbk') as f:
+        with open(bat文件路径, 'w', encoding='utf-8-sig') as f:
             f.write(bat内容)
 
         return bat文件路径
