@@ -67,3 +67,7 @@ __pypackages__/
 /dataset/
 /.claude
 /最新远程版本缓存.json
+
+# macOS 系统文件
+.DS_Store
+**/.DS_Store

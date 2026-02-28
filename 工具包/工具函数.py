@@ -67,6 +67,23 @@ def 是否夜世界资源打满(资源字典: dict) -> bool:
             是打满(资源字典.get("圣水", 0))
     )
 
+def 单行资源识别(ocr引擎, img):
+    img = cv2.resize(img, None, fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    binary = cv2.adaptiveThreshold(
+        gray,
+        255,
+        cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+        cv2.THRESH_BINARY_INV,
+        31,
+        5
+    )
+    result, _ = ocr引擎(binary,  use_cls=False)
+    if result and len(result) > 0:
+        清理文本 = result[0][1].replace('O', '0').replace('o', '0').replace(' ', '')
+        return int(''.join(filter(str.isdigit, 清理文本)))
+    return 0
+
 
 from tkinter import ttk
 import tkinter as tk
