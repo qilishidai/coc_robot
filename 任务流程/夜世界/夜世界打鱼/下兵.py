@@ -30,6 +30,7 @@ class 下兵(夜世界基础任务):
                 self.上下文.脚本延时(random.randint(100, 300))
 
             # 把英雄技能提取到后台循环执行
+            self.上下文.置脚本状态("后台循环释放英雄技能")
             self.启动后台放英雄技能()
 
             技能次数=0
@@ -109,25 +110,17 @@ class 下兵(夜世界基础任务):
         return 随机点列表
 
     def 启动后台放英雄技能(self):
-        """最简封装：确保后台只有一个线程在每隔几秒点英雄技能"""
-        if getattr(self.上下文, '英雄技能线程开启', False):
+        if hasattr(self.上下文, '英雄技能标志'):
             return
 
-        self.上下文.后台释放英雄技能线程 = threading.Event()
-        self.上下文.英雄技能线程开启 = True
+        标志 = self.上下文.英雄技能标志 = threading.Event()
 
         def _工作线程():
-            停止信号 = self.上下文.后台释放英雄技能线程
-            while not 停止信号.is_set():
-                if 停止信号.wait(random.uniform(6, 10)):
-                    break
+            while not 标志.wait(random.randint(8, 15)):
                 try:
-                    self.上下文.点击(42, 554, 延时=50)
-                    self.上下文.置脚本状态("释放英雄技能")
-                except Exception:
-                    pass
-            # 只有当 while 循环由于标志位 set 而退出后，才清理状态，表示线程真的没了
-            try: delattr(self.上下文, '英雄技能线程开启')
+                    self.上下文.点击(42, 554)
+                except: pass
+            try: delattr(self.上下文, '英雄技能标志')
             except: pass
 
         threading.Thread(target=_工作线程, daemon=True).start()

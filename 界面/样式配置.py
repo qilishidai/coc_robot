@@ -36,3 +36,6 @@ def 配置现代化样式():
 
     # 输入控件
     style.configure("TEntry", padding=5, relief="flat")
+
+    # 机器人管理专用列表样式
+    style.configure("Robot.Treeview", rowheight=36)
