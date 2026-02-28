@@ -1,6 +1,7 @@
 from 任务流程.基础任务框架 import 任务上下文
 from 任务流程.夜世界.夜世界打鱼.夜世界基础任务类 import 夜世界基础任务
 import random
+import threading
 
 class 下兵(夜世界基础任务):
     def __init__(self ,上下文: '任务上下文'):
@@ -28,15 +29,14 @@ class 下兵(夜世界基础任务):
                 self.上下文.点击(x, y)
                 self.上下文.脚本延时(random.randint(100, 300))
 
-            # 放英雄技能
-            self.上下文.脚本延时(3000)
-            self.上下文.点击(42, 554)
+            # 把英雄技能提取到后台循环执行
+            self.启动后台放英雄技能()
 
             技能次数=0
             while self.尝试点击放兵种技能():
                 技能次数 += 1
                 self.上下文.脚本延时(random.randint(20, 60))
-                self.上下文.置脚本状态("放兵中技能")
+                self.上下文.置脚本状态("放兵种技能")
                 if 技能次数>=40:
                     raise RuntimeError(f"一直在放兵种技能,超过{技能次数}次")
 
@@ -108,3 +108,26 @@ class 下兵(夜世界基础任务):
 
         return 随机点列表
 
+    def 启动后台放英雄技能(self):
+        """最简封装：确保后台只有一个线程在每隔几秒点英雄技能"""
+        if getattr(self.上下文, '英雄技能线程开启', False):
+            return
+
+        self.上下文.后台释放英雄技能线程 = threading.Event()
+        self.上下文.英雄技能线程开启 = True
+
+        def _工作线程():
+            停止信号 = self.上下文.后台释放英雄技能线程
+            while not 停止信号.is_set():
+                if 停止信号.wait(random.uniform(6, 10)):
+                    break
+                try:
+                    self.上下文.点击(42, 554, 延时=50)
+                    self.上下文.置脚本状态("释放英雄技能")
+                except Exception:
+                    pass
+            # 只有当 while 循环由于标志位 set 而退出后，才清理状态，表示线程真的没了
+            try: delattr(self.上下文, '英雄技能线程开启')
+            except: pass
+
+        threading.Thread(target=_工作线程, daemon=True).start()

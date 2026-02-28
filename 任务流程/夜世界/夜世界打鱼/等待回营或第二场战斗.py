@@ -21,7 +21,6 @@ class 等待回营或第二次战斗(夜世界基础任务):
 
                 if self.是否出现换兵种箭头():
                     self.上下文.置脚本状态("第二次战斗")
-
                     self.上下文.置脚本状态("开始下兵逻辑",3*60)
                     下兵(self.上下文).执行()
 
@@ -34,6 +33,12 @@ class 等待回营或第二次战斗(夜世界基础任务):
         except RuntimeError as e:
             self.异常处理(e)
             return False
+        finally:
+            if hasattr(self.上下文, '后台释放英雄技能线程'):
+                self.上下文.后台释放英雄技能线程.set()
+                delattr(self.上下文, '后台释放英雄技能线程')
+            if hasattr(self.上下文, '英雄技能线程开启'):
+                delattr(self.上下文, '英雄技能线程开启')
 
     def 是否出现换兵种箭头(self):
         """验证是否已开始战斗"""
