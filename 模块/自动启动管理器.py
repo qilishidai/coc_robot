@@ -168,6 +168,7 @@ class 自动启动管理器:
 
         # 构建bat文件内容
         bat内容 = "@echo off\n"
+        bat内容 += f"chcp 65001\n"
         bat内容 += f"cd /d {self.项目根目录}\n"
 
         if 使用虚拟环境:
@@ -176,7 +177,7 @@ class 自动启动管理器:
         bat内容 += f"python 主入口.py --机器人 标志={机器人标识}\n"
 
         # 写入文件
-        with open(bat文件路径, 'w', encoding='utf-8-sig') as f:
+        with open(bat文件路径, 'w', encoding='utf-8') as f:
             f.write(bat内容)
 
         return bat文件路径

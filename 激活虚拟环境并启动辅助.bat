@@ -1,4 +1,7 @@
 @echo off
+:: 设置代码页为UTF-8
+chcp 65001
+
 :: 切换到当前bat文件所在目录
 cd /d "%~dp0"
 
