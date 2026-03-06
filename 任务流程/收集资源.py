@@ -16,7 +16,7 @@ class 收集资源任务(基础任务):
         检测结果 = self.检测器.检测(屏幕图像)
 
         for 类别名称 in ['金矿', '圣水采集器']:
-            目标 = next((x for x in 检测结果 if x['类别名称'] == 类别名称 and x['置信度'] > 0.7), None)
+            目标 = next((x for x in 检测结果 if x['类别名称'] == 类别名称 and x['置信度'] > 0.8), None)
             if not 目标:
                 continue
 
