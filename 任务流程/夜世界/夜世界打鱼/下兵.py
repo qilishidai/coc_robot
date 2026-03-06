@@ -1,6 +1,7 @@
 from 任务流程.基础任务框架 import 任务上下文
 from 任务流程.夜世界.夜世界打鱼.夜世界基础任务类 import 夜世界基础任务
 import random
+import threading
 
 class 下兵(夜世界基础任务):
     def __init__(self ,上下文: '任务上下文'):
@@ -28,15 +29,15 @@ class 下兵(夜世界基础任务):
                 self.上下文.点击(x, y)
                 self.上下文.脚本延时(random.randint(100, 300))
 
-            # 放英雄技能
-            self.上下文.脚本延时(3000)
-            self.上下文.点击(42, 554)
+            # 把英雄技能提取到后台循环执行
+            self.上下文.置脚本状态("后台循环释放英雄技能")
+            self.启动后台放英雄技能()
 
             技能次数=0
             while self.尝试点击放兵种技能():
                 技能次数 += 1
                 self.上下文.脚本延时(random.randint(20, 60))
-                self.上下文.置脚本状态("放兵中技能")
+                self.上下文.置脚本状态("放兵种技能")
                 if 技能次数>=40:
                     raise RuntimeError(f"一直在放兵种技能,超过{技能次数}次")
 
@@ -108,3 +109,18 @@ class 下兵(夜世界基础任务):
 
         return 随机点列表
 
+    def 启动后台放英雄技能(self):
+        if hasattr(self.上下文, '英雄技能标志'):
+            return
+
+        标志 = self.上下文.英雄技能标志 = threading.Event()
+
+        def _工作线程():
+            while not 标志.wait(random.randint(8, 15)):
+                try:
+                    self.上下文.点击(42, 554)
+                except: pass
+            try: delattr(self.上下文, '英雄技能标志')
+            except: pass
+
+        threading.Thread(target=_工作线程, daemon=True).start()

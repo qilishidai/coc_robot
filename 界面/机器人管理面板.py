@@ -27,7 +27,7 @@ class 机器人管理面板(ttk.LabelFrame):
     def _创建界面(self):
         """创建管理面板界面"""
         # 机器人列表 Treeview
-        self.机器人列表框 = ttk.Treeview(self, columns=('status'), show='tree headings', height=8)
+        self.机器人列表框 = ttk.Treeview(self, columns=('status'), show='tree headings', height=8, style="Robot.Treeview")
         self.机器人列表框.column('#0', width=250, anchor=tk.W)
         self.机器人列表框.heading('#0', text='机器人标识', anchor=tk.W)
         self.机器人列表框.column('status', width=80, anchor=tk.CENTER)

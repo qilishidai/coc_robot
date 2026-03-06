@@ -20,8 +20,11 @@ class 等待回营或第二次战斗(夜世界基础任务):
             while time.time() - 开始时间 < 超时时间:
 
                 if self.是否出现换兵种箭头():
-                    self.上下文.置脚本状态("第二次战斗")
 
+                    if hasattr(self.上下文, '英雄技能标志'):
+                        self.上下文.英雄技能标志.set()
+
+                    self.上下文.置脚本状态("第二次战斗")
                     self.上下文.置脚本状态("开始下兵逻辑",3*60)
                     下兵(self.上下文).执行()
 
@@ -34,6 +37,11 @@ class 等待回营或第二次战斗(夜世界基础任务):
         except RuntimeError as e:
             self.异常处理(e)
             return False
+        finally:
+            if hasattr(self.上下文, '英雄技能标志'):
+                self.上下文.英雄技能标志.set()
+                try: delattr(self.上下文, '英雄技能标志')
+                except: pass
 
     def 是否出现换兵种箭头(self):
         """验证是否已开始战斗"""
