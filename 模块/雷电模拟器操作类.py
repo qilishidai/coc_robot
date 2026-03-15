@@ -185,6 +185,7 @@ class 雷电模拟器操作类:
             模拟器状态 = subprocess.run(
                 [self.雷电模拟器安装目录 + "ldconsole.exe", "action","--index",str(self.雷电模拟器索引),"--key","call.reboot","--value","nulll"],
                 encoding='gbk',
+                errors='ignore',
                 stdout=subprocess.PIPE,
                 startupinfo=startupinfo
             )
@@ -235,6 +236,7 @@ class 雷电模拟器操作类:
             模拟器状态 = subprocess.run(
                 [self.雷电模拟器安装目录 + "ldconsole.exe", "list2"],
                 encoding='gbk',
+                errors='ignore',
                 stdout=subprocess.PIPE,
                 startupinfo=startupinfo
             )
@@ -342,7 +344,7 @@ class 雷电模拟器操作类:
         while True:
             with self._命令行锁:
 
-                结果 = subprocess.run(adb命令, stdout=subprocess.PIPE, encoding='gbk')
+                结果 = subprocess.run(adb命令, stdout=subprocess.PIPE, encoding='gbk', errors='ignore')
 
             if time.time() - 开始时间 > 最大等待时间:
                 raise Exception("等待进入安卓系统超时")
@@ -358,7 +360,7 @@ class 雷电模拟器操作类:
     def 关闭雷电模拟器(self):
         with self._命令行锁:
             关闭命令 = [self.雷电模拟器安装目录 + "ldconsole.exe", "quit", "--index", str(self.雷电模拟器索引)]
-            subprocess.run(关闭命令, encoding='gbk')
+            subprocess.run(关闭命令, encoding='gbk', errors='ignore')
 
     def 打开应用(self, 包名):
         with self._命令行锁:
