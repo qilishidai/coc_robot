@@ -151,7 +151,7 @@ class 自动启动管理器:
         """
         try:
             cmd = ["schtasks", "/Query", "/TN", 任务名称]
-            result = subprocess.run(cmd, capture_output=True, text=True, encoding='gbk')
+            result = subprocess.run(cmd, capture_output=True, text=True, encoding='utf-8', errors='ignore')
             return result.returncode == 0
         except Exception:
             return False
@@ -199,7 +199,7 @@ class 自动启动管理器:
             "/F"  # 强制创建，如果已存在则覆盖
         ]
 
-        result = subprocess.run(cmd, capture_output=True, text=True, encoding='gbk')
+        result = subprocess.run(cmd, capture_output=True, text=True, encoding='utf-8', errors='ignore')
 
         if result.returncode != 0:
             raise Exception(f"创建计划任务失败: {result.stderr}")
@@ -211,7 +211,7 @@ class 自动启动管理器:
         """
         cmd = ["schtasks", "/Delete", "/TN", 任务名称, "/F"]
 
-        result = subprocess.run(cmd, capture_output=True, text=True, encoding='gbk')
+        result = subprocess.run(cmd, capture_output=True, text=True, encoding='utf-8', errors='ignore')
 
         if result.returncode != 0:
             # 如果任务不存在，也不算错误
@@ -225,7 +225,7 @@ class 自动启动管理器:
         """
         try:
             cmd = ["schtasks", "/Query", "/FO", "LIST"]
-            result = subprocess.run(cmd, capture_output=True, text=True, encoding='gbk')
+            result = subprocess.run(cmd, capture_output=True, text=True, encoding='utf-8', errors='ignore')
 
             if result.returncode != 0:
                 return []
