@@ -45,8 +45,10 @@ class 打开要升级的宠物任务(基础任务):
             #     return False
 
             ocr结果=self.执行OCR识别((566,139,753,296))
-            if "完成升级" in ocr结果.__str__():
+            print(ocr结果)
+            if "完成升级" in ocr结果.__str__() or "级" in ocr结果.__str__():
                 self.上下文.置脚本状态("战宠升级：当前有宠物正在升级中")
+
                 self.关闭战宠小屋页面()
                 return False
 
