@@ -71,3 +71,5 @@ __pypackages__/
 # macOS 系统文件
 .DS_Store
 **/.DS_Store
+
+数据集/

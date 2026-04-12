@@ -218,6 +218,25 @@ class 机器人设置:
             "UI类型": "bool"
         }
     )
+    
+    默认上线时长: float = field(
+        default=1.5,
+        metadata={
+            "显示名称": "默认上线时长(小时)",
+            "描述": "机器人默认的上线时长，单位为小时",
+            "UI类型": "entry"
+        }
+    )
+    
+    启动间隔: float = field(
+        default=4,
+        metadata={
+            "显示名称": "启动间隔(小时)",
+            "描述": "机器人默认的启动间隔，下线时长达到间隔后自动上线，单位为小时",
+            "UI类型": "entry"
+        }
+    )
+    
 
     def __post_init__(self):
         self.部落冲突包名 = ("com.supercell.clashofclans"
@@ -325,6 +344,7 @@ class 任务数据库:
 
             if 结果列表:
                 conn.commit()
+    
     def 记录日志(self, 机器人标志: str, 日志内容: str, 下次超时: float):
         """原子化日志记录
         下次超时:为下次超时的时间戳
@@ -336,6 +356,20 @@ class 任务数据库:
             )
 
             conn.commit()
+        
+    def 记录启动时间(self, 机器人标志: str, 启动时间: float):
+        self.记录日志(机器人标志, "机器人启动", 启动时间)
+            
+    def 获取启动时间(self, 机器人标识: str):
+        with self._获取连接() as conn:
+            结果 = conn.execute("""
+                SELECT 记录时间 
+                FROM 任务日志 
+                WHERE 机器人标志 = ? AND 日志内容 = '机器人启动'
+                ORDER BY 记录时间 DESC 
+                LIMIT 1
+            """, (机器人标识,)).fetchone()
+        return 结果[0] if 结果 else None # 没有处于启动状态
 
     def 读取最后日志(self, 机器人标志: str) -> 任务日志:
         """获取最后有效日志"""

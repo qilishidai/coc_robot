@@ -32,10 +32,13 @@ class 搜索目标敌人任务(基础任务):
         时间戳 = int(time.time() * 1000)
         文件名 = self.数据集目录 / f"img_{时间戳}_{self.目录文件数 + 1:05d}.png"
 
+        success, encoded_img = cv2.imencode('.png', 屏幕图像)
+        if success:
+            with open(str(文件名), 'wb') as f:
+                f.write(encoded_img.tobytes())
 
-
-        # 保存图像
-        cv2.imwrite(str(文件名), 屏幕图像)
+        # # 保存图像
+        # cv2.imwrite(str(文件名), 屏幕图像)
 
         上下文.置脚本状态(f"目前总共已采集 {self.目录文件数 + 1} 张图像")
 

@@ -3,6 +3,7 @@ import threading
 import queue
 import time
 from time import sleep
+from typing import Dict
 
 from 数据库.任务数据库 import 任务数据库, 机器人设置
 from 模块.雷电模拟器操作类 import 雷电模拟器操作类
@@ -14,7 +15,7 @@ class 机器人监控中心:
     """增强型监控服务"""
 
     def __init__(self,日志队列=None):
-        self.机器人池 = {}
+        self.机器人池: Dict[str, 自动化机器人] = {}
         self.日志队列 = 日志队列#UI从这个队列获取日志
         self.全局消息队列 = queue.Queue()#所有在线用户共用一个消息队列和数据库
         self.数据库 = 任务数据库()
@@ -180,6 +181,7 @@ if __name__ == "__main__":
                 是否刷主世界=参数字典.get("刷主世界", 旧设置.是否刷主世界),
                 是否刷夜世界=参数字典.get("刷夜世界", 旧设置.是否刷夜世界),
                 欲升级的英雄或建筑=欲升级的英雄列表 if 欲升级的英雄列表 else 旧设置.欲升级的英雄或建筑,
+                默认上线时长=float(参数字典.get("默认上线时长", 旧设置.默认上线时长))
             )
 
         # 创建并启动机器人

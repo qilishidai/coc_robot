@@ -1,15 +1,19 @@
 """
 机器人管理面板模块 - 机器人列表、状态显示和控制功能
 """
+import time
 import tkinter as tk
 from tkinter import ttk, messagebox
 from typing import Callable, Optional
+
+from 主入口 import 机器人监控中心
+from 线程.自动化机器人 import 自动化机器人
 
 
 class 机器人管理面板(ttk.LabelFrame):
     """机器人管理面板"""
 
-    def __init__(self, 父容器, 监控中心, 选择变化回调: Callable[[Optional[str]], None]):
+    def __init__(self, 父容器, 监控中心: 机器人监控中心, 选择变化回调: Callable[[Optional[str]], None]):
         """
         初始化机器人管理面板
         :param 父容器: 父容器控件
@@ -27,9 +31,11 @@ class 机器人管理面板(ttk.LabelFrame):
     def _创建界面(self):
         """创建管理面板界面"""
         # 机器人列表 Treeview
-        self.机器人列表框 = ttk.Treeview(self, columns=('status'), show='tree headings', height=8, style="Robot.Treeview")
-        self.机器人列表框.column('#0', width=250, anchor=tk.W)
+        self.机器人列表框 = ttk.Treeview(self, columns=('time', 'status'), show='tree headings', height=8, style="Robot.Treeview")
+        self.机器人列表框.column('#0', width=100, anchor=tk.W)
         self.机器人列表框.heading('#0', text='机器人标识', anchor=tk.W)
+        self.机器人列表框.column('time', width=150, anchor=tk.W)
+        self.机器人列表框.heading('time', text='剩余时间', anchor=tk.W)
         self.机器人列表框.column('status', width=80, anchor=tk.CENTER)
         self.机器人列表框.heading('status', text='状态', anchor=tk.CENTER)
         self.机器人列表框.pack(pady=5, fill=tk.BOTH, expand=True)
@@ -69,7 +75,7 @@ class 机器人管理面板(ttk.LabelFrame):
         self.更新机器人列表()
         self.after(500, self._定时刷新机器人列表)
 
-    def 获取当前机器人(self):
+    def 获取当前机器人(self) -> Optional[自动化机器人]:
         """返回当前选中的机器人实例"""
         if self.当前机器人ID:
             return self.监控中心.机器人池.get(self.当前机器人ID)
@@ -133,7 +139,38 @@ class 机器人管理面板(ttk.LabelFrame):
             标识 = self.机器人列表框.item(item, 'text')
             if robot := self.监控中心.机器人池.get(标识):
                 self.机器人列表框.set(item, 'status', robot.当前状态)
-
+                时间 = "-"
+                if robot.当前状态 == "运行中":
+                    启动时间 = robot.获取启动时间()
+                    剩余在线时长 = robot.设置.默认上线时长 * 3600 - (time.time() - 启动时间)
+                    剩余下线时长 = robot.剩余超时时间()
+                    
+                    def format_time(剩余上线时长: float):
+                        hh = int(剩余上线时长 // 3600)
+                        mm = int(剩余上线时长 % 3600) // 60
+                        ss = int(剩余上线时长 % 3600) % 60
+                        时间 = []
+                        for v, s in [(hh, '时'), (mm, '分'), (ss, '秒')]:
+                            if v != 0 or len(时间) != 0:
+                                时间.append(f"{v:02d}{s}")
+                        
+                        时间 = " ".join(时间)
+                        return 时间
+                    
+                    if robot.设置.默认上线时长 > 0 and 剩余在线时长 > 0:
+                        时间 = format_time(剩余在线时长)
+                        时间 = f"{时间}后下线"
+                    elif robot.设置.默认上线时长 > 0 and 剩余在线时长 <= 0 and robot.上线.is_set():
+                        时间 = "马上下线" # 一局没有打完还没下线
+                    elif robot.设置.启动间隔 > 0 and 剩余下线时长 > 0:
+                        时间 = format_time(剩余下线时长)
+                        时间 = f"{时间}后上线"
+                    elif robot.设置.启动间隔 > 0 and 剩余下线时长 <= 0 and not robot.上线.is_set():
+                        时间 = "马上上线"
+                    self.机器人列表框.set(item, "time", 时间)
+                
+                self.机器人列表框.set(item, 'time', 时间)
+                    
         # 清除所有选择
         self.机器人列表框.selection_remove(self.机器人列表框.selection())
 
@@ -150,6 +187,7 @@ class 机器人管理面板(ttk.LabelFrame):
         if 机器人:
             try:
                 机器人.启动()
+                机器人.记录启动时间()
                 return f"{机器人.机器人标志} 已启动"
             except Exception as e:
                 messagebox.showerror("启动失败", str(e))
