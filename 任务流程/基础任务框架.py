@@ -205,7 +205,6 @@ class 任务上下文:
 
             if self.停止事件.is_set():
                 self.置脚本状态("收到停止事件")
-                self.op.安全清理()
                 raise SystemExit(f"收到退出请求,主动退出线程,机器人{self.机器人标志}已关闭")
 
     def 点击(self,x,y,延时=None,是否精确点击=False):
