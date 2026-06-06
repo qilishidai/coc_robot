@@ -219,6 +219,27 @@ class 机器人设置:
         }
     )
 
+    企业微信webhook: str = field(
+        default="",
+        metadata={
+            "显示名称": "企业微信 Webhook",
+            "描述": "企业微信群机器人 Webhook URL（留空则不发送通知）",
+            "UI类型": "entry"
+        }
+    )
+
+    状态上报间隔分钟: int = field(
+        default=30,
+        metadata={
+            "显示名称": "状态上报间隔（分钟）",
+            "描述": "定时发送状态消息的间隔，0表示禁用定时上报",
+            "UI类型": "spinbox",
+            "最小值": 0,
+            "最大值": 1440,
+            "步进": 5
+        }
+    )
+
     def __post_init__(self):
         self.部落冲突包名 = ("com.supercell.clashofclans"
                         if self.服务器 == "国际服" else
