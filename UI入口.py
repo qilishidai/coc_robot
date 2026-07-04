@@ -4,6 +4,7 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 from 主入口 import 机器人监控中心
 from 工具包.版本管理 import 获取本地版本号, 异步更新远程最新版本, 检查更新
+from 工具包.公告管理 import 异步刷新公告与统计
 from 数据库.任务数据库 import 机器人设置, 任务数据库
 from sv_ttk import set_theme
 
@@ -13,6 +14,7 @@ from 界面.样式配置 import 配置现代化样式
 from 界面.日志面板 import 日志面板
 from 界面.机器人管理面板 import 机器人管理面板
 from 界面.配置管理面板 import 配置管理面板
+from 界面.公告面板 import 公告面板
 
 
 def 显示更新提示窗口(父窗口, 本地版本, 远程版本, 更新内容):
@@ -134,6 +136,10 @@ class 增强型机器人控制界面:
         """实例化并组装各子面板"""
         主框架 = ttk.Frame(self.master)
         主框架.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+
+        # 顶部：公告横幅（无数据时高度为0，不可见）
+        self.公告横幅 = 公告面板(主框架)
+        self.公告横幅.pack(side=tk.TOP, fill=tk.X, padx=5, pady=(0, 5))
 
         # 左侧：机器人管理面板
         self.机器人管理 = 机器人管理面板(
@@ -291,6 +297,7 @@ if __name__ == "__main__":
     # 启动正常流程
     获取本地版本号()
     异步更新远程最新版本()
+    异步刷新公告与统计()
     日志队列 = queue.Queue()
     监控中心 = 机器人监控中心(日志队列)
     root = tk.Tk()

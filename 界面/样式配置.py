@@ -39,3 +39,10 @@ def 配置现代化样式():
 
     # 机器人管理专用列表样式
     style.configure("Robot.Treeview", rowheight=36)
+
+    # 公告横幅样式
+    style.configure("公告.TLabel", font=("Microsoft YaHei UI", 10))
+    style.configure("重要公告.TLabel", foreground="#cb2431",
+                    font=("Microsoft YaHei UI", 10, "bold"))
+    style.configure("公告统计.TLabel", foreground="#57606a",
+                    font=("Microsoft YaHei UI", 9))
