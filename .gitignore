@@ -69,6 +69,7 @@ __pypackages__/
 /最新远程版本缓存.json
 /公告缓存.json
 /统计缓存.json
+/开发者标记.txt
 
 # macOS 系统文件
 .DS_Store

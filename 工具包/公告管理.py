@@ -11,6 +11,7 @@ import urllib.request
 统计缓存文件 = "统计缓存.json"
 公告远程文件名 = "公告.json"
 统计远程文件名 = "统计数据.json"
+开发者标记文件 = "开发者标记.txt"
 支持的格式版本 = 1
 
 # 多源 fallback：raw 数据最新但大陆经常不可达；jsdelivr 有约 12 小时 CDN 缓存
@@ -58,6 +59,11 @@ def 读取公告缓存():
     return _读取缓存(公告缓存文件)
 
 
+def 是否开发者模式():
+    """项目根目录存在 开发者标记.txt 时启用开发者功能（该文件不入库）"""
+    return os.path.exists(开发者标记文件)
+
+
 def 读取统计缓存():
     return _读取缓存(统计缓存文件)
 
@@ -93,10 +99,11 @@ def 异步刷新公告与统计():
         if 公告 is not None:
             _原子写缓存(公告缓存文件, 公告)
             print("[公告] 公告数据已更新")
-        统计 = _从多源获取(统计远程文件名)
-        if 统计 is not None:
-            _原子写缓存(统计缓存文件, 统计)
-            print("[公告] 统计数据已更新")
+        if 是否开发者模式():
+            统计 = _从多源获取(统计远程文件名)
+            if 统计 is not None:
+                _原子写缓存(统计缓存文件, 统计)
+                print("[公告] 统计数据已更新")
 
     线程 = threading.Thread(target=后台任务, daemon=True)
     线程.start()
