@@ -81,6 +81,9 @@ def main():
         "独立克隆按日累计": sum(d.get("独立克隆", 0) for d in 每日明细.values()),
         "访问次数": sum(d.get("访问次数", 0) for d in 每日明细.values()),
         "独立访客按日累计": sum(d.get("独立访客", 0) for d in 每日明细.values()),
+        # API 顶层 uniques 是整个 14 天窗口去重后的人数，比按日累计准确
+        "近14天独立克隆": 克隆数据.get("uniques", 0),
+        "近14天独立访客": 访问数据.get("uniques", 0),
         "star数": 仓库信息.get("stargazers_count", 0),
         "release总下载量": sum(
             资产.get("download_count", 0)
