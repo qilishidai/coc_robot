@@ -270,7 +270,7 @@ python UI入口.py
 deactivate
 ```
 
-#### Linux / macOS 系统
+#### Linux / macOS 系统（仅演示技术，目前项目不支持Windows以外的系统）
 
 ```bash
 # 1. 创建虚拟环境
